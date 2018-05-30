@@ -13,7 +13,7 @@ Using cron, run your program like this:
    --stderr /tmp/foo.stderr.log \
    -e PORT=2018 \ # optional, to pass environment variables
    --pwd /opt/foo \
-   -- some arguments for foo # optional
+   -- some arguments # optional
 ```
 
 The program will be started after one minute. Every minute, cron will
