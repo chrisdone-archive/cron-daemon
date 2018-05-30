@@ -24,6 +24,16 @@ to `foo.pid`.
 Because it's cron, it will ensure the program is running regularly,
 and also persist through system restarts or logout.
 
+Output in `--log foo.log` looks like:
+
+```
+INFO: Process ID 43780 not running.
+INFO: Launching /usr/local/bin/finance
+INFO: Arguments: ["/Users/chris/Finance/statements/"]
+INFO: Environment: [("PORT","2018")]
+INFO: Successfully launched PID: 44861
+```
+
 # Help text
 
 Run `--help`:
