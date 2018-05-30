@@ -1,0 +1,22 @@
+name:                cron-daemon
+version:             0.0.0
+synopsis:            Make something run as a daemon to be run via cron
+description:         Make something run as a daemon to be run via cron
+license:             BSD3
+author:              Chris Done
+maintainer:          chrisdone@gmail.com
+copyright:           2018 Chris Done
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+executable cron-daemon
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , unix
+                     , process
+                     , optparse-applicative
+                     , directory
+  default-language:    Haskell2010
