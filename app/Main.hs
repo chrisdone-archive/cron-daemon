@@ -4,6 +4,7 @@
 module Main where
 
 import Control.Exception
+import Control.Monad
 import Data.Semigroup ((<>))
 import Options.Applicative
 import System.Directory
@@ -22,7 +23,8 @@ data Config = Config
   , configEnv :: [(String, String)]
   , configPwd :: FilePath
   , configArgs :: [String]
-  }
+  , configLogEnv :: Bool
+  } deriving (Show)
 
 sample :: Parser Config
 sample =
@@ -41,7 +43,12 @@ sample =
         help "Environment variable")) <*>
   strOption (long "pwd" <> metavar "DIR" <> help "Working directory") <*>
   many
-    (strArgument (metavar "ARGUMENT" <> help "Argument for the child process"))
+    (strArgument (metavar "ARGUMENT" <> help "Argument for the child process")) <*>
+  flag
+    False
+    True
+    (help "Log environment variables in log file (default: false)" <>
+     long "debug-log-env")
 
 parseEnv :: String -> Maybe (String, String)
 parseEnv =
@@ -85,19 +92,21 @@ start config = do
     launch = do
       logInfo ("Launching " ++ configProgram config)
       logInfo ("Arguments: " ++ show (configArgs config))
-      logInfo ("Environment: " ++ show (configEnv config))
+      when
+        (configLogEnv config)
+        (logInfo ("Environment: " ++ show (configEnv config)))
       errfile <- openFile (configStderr config) AppendMode
       outfile <- openFile (configStdout config) AppendMode
       (_, _, _, ph) <-
         catch
           (createProcess
              (proc (configProgram config) (configArgs config))
-             { env = Just (configEnv config)
-             , std_in = NoStream
-             , std_out = UseHandle outfile
-             , std_err = UseHandle errfile
-             , cwd = Just (configPwd config)
-             })
+               { env = Just (configEnv config)
+               , std_in = NoStream
+               , std_out = UseHandle outfile
+               , std_err = UseHandle errfile
+               , cwd = Just (configPwd config)
+               })
           (\(e :: SomeException) ->
              logError "Failed to launch process." >> throw e)
       mpid <- getPid ph
