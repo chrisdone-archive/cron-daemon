@@ -13,7 +13,7 @@ cabal-version:       >=1.10
 executable cron-daemon
   hs-source-dirs:      app
   main-is:             Main.hs
-  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N -static
+  ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , unix
                      , process

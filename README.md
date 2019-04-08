@@ -45,6 +45,21 @@ INFO: Environment: [("PORT","2018")]
 INFO: Successfully launched PID: 44861
 ```
 
+# Real example
+
+This runs [tryhaskell.org](http://tryhaskell.org/):
+
+    * * * * * sudo -u tryhaskell /usr/local/bin/cron-daemon \
+                /usr/local/bin/stack \
+                --pid /tmp/tryhaskell.pid \
+                --log /tmp/tryhaskell.log \
+                --stdout /tmp/tryhaskell.stdout.log \
+                --stderr /tmp/tryhaskell.stderr.log \
+                -e MUEVAL_TIMEOUT=3 \
+                -e HOME=/home/tryhaskell \
+                --pwd /home/tryhaskell/tryhaskell \
+                -- exec tryhaskell
+
 # Help text
 
 Run `--help`:
@@ -70,3 +85,19 @@ Run `--help`:
       --terminate              Terminate the process if it's already running (can be
                                used for restart/update of binary)
       -h,--help                Show this help text
+
+# Building statically
+
+
+Build the docker image
+
+    docker image build . -t cron-daemon
+
+Run the Haskell build
+
+    docker run --rm -v "$(pwd):$(pwd)" -w "$(pwd)" cron-daemon stack build --allow-different-user --system-ghc --ghc-options="-O0 -static -optl-static"
+
+Copy the binary listed at the end, e.g.
+
+    $ ldd .stack-work/dist/x86_64-linux/Cabal-2.2.0.1/build/cron-daemon/cron-daemon
+	not a dynamic executable
