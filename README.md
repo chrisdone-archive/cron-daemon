@@ -65,7 +65,7 @@ This runs [tryhaskell.org](http://tryhaskell.org/):
 Run with `stack build --file-watch --exec` to re-run your service
 whenever a file is changed:
 
-    stack build --fast --file-watch --exec 'cron-daemon --pid .stack-work/cron-daemon-pid --terminate -- webshow -d /webshow'
+    stack build --fast --file-watch --exec 'cron-daemon --pid .stack-work/pid --terminate -- webshow -d /webshow'
 
 We pop the arguments after `--`, and `--pid` in a place that's
 probably ignored by git.
