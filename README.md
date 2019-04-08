@@ -45,21 +45,6 @@ INFO: Environment: [("PORT","2018")]
 INFO: Successfully launched PID: 44861
 ```
 
-# Real example
-
-This runs [tryhaskell.org](http://tryhaskell.org/):
-
-    * * * * * sudo -u tryhaskell /usr/local/bin/cron-daemon \
-                /usr/local/bin/stack \
-                --pid /tmp/tryhaskell.pid \
-                --log /tmp/tryhaskell.log \
-                --stdout /tmp/tryhaskell.stdout.log \
-                --stderr /tmp/tryhaskell.stderr.log \
-                -e MUEVAL_TIMEOUT=3 \
-                -e HOME=/home/tryhaskell \
-                --pwd /home/tryhaskell/tryhaskell \
-                -- exec tryhaskell
-
 # Using with stack
 
 Run with `stack build --file-watch --exec` to re-run your service
