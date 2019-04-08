@@ -5,7 +5,7 @@ Useful for:
 * An easy way to make background services on Linux or OS X using cron,
   and make sure it stays running.
 * An easy way to run a process and automatically restart it by
-  re-running the same command.
+  re-running the same command (via `--terminate`).
 
 ## Example with cron
 
