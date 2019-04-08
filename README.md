@@ -1,4 +1,4 @@
-# cron-daemon (Linux-only)
+# cron-daemon (Unix-like only)
 
 Useful for:
 
