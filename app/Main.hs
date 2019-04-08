@@ -24,31 +24,37 @@ data Config = Config
   , configPwd :: FilePath
   , configArgs :: [String]
   , configLogEnv :: Bool
+  , configTerm :: Bool
   } deriving (Show)
 
 sample :: Parser Config
 sample =
   Config <$>
-  strOption (long "program" <> metavar "PROGRAM" <> help "Run this program") <*>
+  strArgument (metavar "PROGRAM" <> help "Run this program") <*>
   strOption
     (long "pid" <> metavar "FILEPATH" <>
-     help "Write the process ID to this file") <*>
-  strOption (long "log" <> metavar "FILEPATH" <> help "Log file") <*>
-  strOption (long "stderr" <> metavar "FILEPATH" <> help "Process stderr file") <*>
-  strOption (long "stdout" <> metavar "FILEPATH" <> help "Process stdout file") <*>
+     help "Write the process ID to this file" <> value "cron-daemon-pid") <*>
+  strOption (long "log" <> metavar "FILEPATH" <> help "Log file" <> value "/dev/stdout") <*>
+  strOption (long "stderr" <> metavar "FILEPATH" <> help "Process stderr file" <> value "/dev/stderr") <*>
+  strOption (long "stdout" <> metavar "FILEPATH" <> help "Process stdout file" <> value "/dev/stdout") <*>
   many
     (option
        (maybeReader (parseEnv))
        (long "env" <> short 'e' <> metavar "NAME=value" <>
         help "Environment variable")) <*>
-  strOption (long "pwd" <> metavar "DIR" <> help "Working directory") <*>
+  strOption (long "pwd" <> metavar "DIR" <> help "Working directory" <> value ".") <*>
   many
     (strArgument (metavar "ARGUMENT" <> help "Argument for the child process")) <*>
   flag
     False
     True
     (help "Log environment variables in log file (default: false)" <>
-     long "debug-log-env")
+     long "debug-log-env") <*>
+  flag
+    False
+    True
+    (help "Terminate the process if it's already running (can be used for restart/update of binary)" <>
+     long "terminate")
 
 parseEnv :: String -> Maybe (String, String)
 parseEnv =
@@ -78,7 +84,11 @@ start config = do
       case readMaybe pidbytes of
         Just u32 -> do
           catch
-            (signalProcess 0 (CPid u32))
+            (do signalProcess 0 (CPid u32)
+                when (configTerm config)
+                     (do logInfo "Terminating the process as requested and re-launching."
+                         signalProcess sigTERM (CPid u32)
+                         launch))
             (\(_ :: SomeException) -> do
                logInfo ("Process ID " ++ show u32 ++ " not running.")
                launch)
