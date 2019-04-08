@@ -63,7 +63,8 @@ This runs [tryhaskell.org](http://tryhaskell.org/):
 # Using with stack
 
 Run with `stack build --file-watch --exec` to re-run your service
-whenever a file is changed:
+whenever a file is changed, for a service `webshow` that I run as
+`webshow -d /webshow`:
 
     stack build --fast --file-watch --exec 'cron-daemon --pid .stack-work/pid --terminate -- webshow -d /webshow'
 
