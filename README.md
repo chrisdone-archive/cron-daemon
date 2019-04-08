@@ -60,6 +60,16 @@ This runs [tryhaskell.org](http://tryhaskell.org/):
                 --pwd /home/tryhaskell/tryhaskell \
                 -- exec tryhaskell
 
+# Using with stack
+
+Run with `stack build --file-watch --exec` to re-run your service
+whenever a file is changed:
+
+    stack build --fast --file-watch --exec 'cron-daemon webshow --pid .stack-work/cron-daemon-pid --terminate -- -d /webshow'
+
+We pop the arguments after `--`, and `--pid` in a place that's
+probably ignored by git.
+
 # Help text
 
 Run `--help`:
