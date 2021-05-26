@@ -3,16 +3,17 @@
 
 module Main where
 
-import Control.Exception
-import Control.Monad
-import Data.Semigroup ((<>))
-import Options.Applicative
-import System.Directory
-import System.IO
-import System.Posix.Signals
-import System.Posix.Types
-import System.Process
-import Text.Read
+import           Control.Exception
+import           Control.Monad
+import qualified Data.Map.Strict as M
+import           Data.Yaml (decodeFileThrow)
+import           Options.Applicative
+import           System.Directory
+import           System.IO
+import           System.Posix.Signals
+import           System.Posix.Types
+import           System.Process
+import           Text.Read
 
 data Config = Config
   { configProgram :: FilePath
@@ -21,6 +22,7 @@ data Config = Config
   , configStderr :: FilePath
   , configStdout :: FilePath
   , configEnv :: [(String, String)]
+  , configEnvFile :: Maybe FilePath
   , configPwd :: FilePath
   , configArgs :: [String]
   , configLogEnv :: Bool
@@ -42,6 +44,7 @@ sample =
        (maybeReader (parseEnv))
        (long "env" <> short 'e' <> metavar "NAME=value" <>
         help "Environment variable")) <*>
+  optional (strOption (long "env-file" <> metavar "FILEPATH" <> help "YAML file containing an object of environment variables")) <*>
   strOption (long "pwd" <> metavar "DIR" <> help "Working directory" <> value ".") <*>
   many
     (strArgument (metavar "ARGUMENT" <> help "Argument for the child process")) <*>
@@ -85,10 +88,12 @@ start config = do
         Just u32 -> do
           catch
             (do signalProcess 0 (CPid u32)
-                when (configTerm config)
-                     (do logInfo "Terminating the process as requested and re-launching."
-                         signalProcess sigTERM (CPid u32)
-                         launch))
+                when
+                  (configTerm config)
+                  (do logInfo
+                        "Terminating the process as requested and re-launching."
+                      signalProcess sigTERM (CPid u32)
+                      launch))
             (\(_ :: SomeException) -> do
                logInfo ("Process ID " ++ show u32 ++ " not running.")
                launch)
@@ -100,6 +105,10 @@ start config = do
     logInfo line = appendFile (configLog config) ("INFO: " ++ line ++ "\n")
     logError line = appendFile (configLog config) ("ERROR: " ++ line ++ "\n")
     launch = do
+      envFromFile <-
+        case configEnvFile config of
+          Nothing -> pure mempty
+          Just fp -> fmap M.toList (decodeFileThrow fp)
       logInfo ("Launching " ++ configProgram config)
       logInfo ("Arguments: " ++ show (configArgs config))
       when
@@ -111,7 +120,7 @@ start config = do
         catch
           (createProcess
              (proc (configProgram config) (configArgs config))
-               { env = Just (configEnv config)
+               { env = Just (configEnv config <> envFromFile)
                , std_in = NoStream
                , std_out = UseHandle outfile
                , std_err = UseHandle errfile

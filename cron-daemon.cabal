@@ -19,4 +19,7 @@ executable cron-daemon
                      , process
                      , optparse-applicative
                      , directory
+                     , yaml
+                     , network
+                     , containers
   default-language:    Haskell2010
